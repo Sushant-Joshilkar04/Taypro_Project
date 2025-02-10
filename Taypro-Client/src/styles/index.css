@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom theme colors used directly in components */
+:root {
+  --color-light-green: #a3e635; /* Example shade */
+  --color-light-blue: #60a5fa;
+  --color-purple: #a78bfa;
+}
