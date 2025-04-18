@@ -4,155 +4,140 @@ import { addLayout, updateLayout } from "../store/slices/layoutSlice";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-const GridEditor = ({ mode = "create", initialLayout = null }) => {
+const GridEditor = ({ mode = "edit", gridData = null, onLayoutUpdate = null }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const existingLayouts = useSelector(state => state.layout.layouts)
 
     // States
-    const [rows, setRows] = useState(mode === "update" ? initialLayout.rows : null);
-    const [cols, setCols] = useState(mode === "update" ? initialLayout.cols : null);
-    const [layoutName, setLayoutName] = useState(mode === "update" ? initialLayout.name : "");
-    const [grid, setGrid] = useState(
-        mode === "update" ? initialLayout.layout : []
-    );
+    const [grid, setGrid] = useState([]);
+    const [rows, setRows] = useState(0);
+    const [cols, setCols] = useState(0);
+    const [cellLegend, setCellLegend] = useState([
+        { value: 0, color: "bg-gray-300", label: "Empty" },
+        { value: 1, color: "bg-blue-500", label: "Solar Panel" }
+    ]);
 
+    // Initialize grid from props
     useEffect(() => {
-        if (mode === "update" && initialLayout) {
-            setLayoutName(initialLayout.name);
-            setRows(initialLayout.rows);
-            setCols(initialLayout.cols);
-            setGrid(initialLayout.layout);
+        if (gridData) {
+            setRows(gridData.rows);
+            setCols(gridData.cols);
+            
+            // Convert any obstacle (value 2) cells to solar panels (value 1)
+            let updatedLayout = gridData.layout 
+                ? gridData.layout.map(row => 
+                    row.map(cell => cell === 2 ? 1 : cell)
+                  ) 
+                : Array.from({ length: gridData.rows }, () =>
+                    Array.from({ length: gridData.cols }, () => 0)
+                  );
+                  
+            setGrid(updatedLayout);
+            
+            // Notify parent component of the update if callback provided
+            if (onLayoutUpdate && JSON.stringify(updatedLayout) !== JSON.stringify(gridData.layout)) {
+                onLayoutUpdate(updatedLayout);
+            }
         }
-    }, [initialLayout, mode]);
+    }, [gridData]);
 
-    // Generate grid when rows or columns change
-    useEffect(() => {
-        if (rows > 0 && cols > 0 && mode === "create") {
-            const newGrid = Array.from({ length: rows }, () =>
-                Array.from({ length: cols }, () => 0)
-            );
-            setGrid(newGrid);
-        }
-    }, [rows, cols, mode]);
-
-    // Handle cell click (toggle values)
+    // Handle cell click (toggle between empty and panel)
     const handleCellClick = (row, col) => {
         const newGrid = [...grid];
-        newGrid[row][col] = (newGrid[row][col] + 1) % 3; // Toggle 0 -> 1 -> 2 -> 0
+        newGrid[row][col] = newGrid[row][col] === 0 ? 1 : 0; // Toggle between 0 and 1
         setGrid(newGrid);
+        
+        // Notify parent component of the update if callback provided
+        if (onLayoutUpdate) {
+            onLayoutUpdate(newGrid);
+        }
     };
 
     // Handle row click (toggle entire row)
     const handleRowClick = (rowIndex) => {
         const newGrid = [...grid];
-        newGrid[rowIndex] = newGrid[rowIndex].map((cell) => (cell + 1) % 3);
+        const currentValue = newGrid[rowIndex].every(cell => cell === 1) ? 0 : 1;
+        newGrid[rowIndex] = newGrid[rowIndex].map(() => currentValue);
         setGrid(newGrid);
+        
+        // Notify parent component of the update if callback provided
+        if (onLayoutUpdate) {
+            onLayoutUpdate(newGrid);
+        }
     };
 
-    // Save Layout
-    const handleSave = () => {
-
-        if (mode === "create") {
-
-            if (layoutName.trim() === "") {
-                alert("Please enter a layout name.");
-                return;
-            }
-            if (rows === null || cols === null || rows <= 0 || cols <= 0) {
-                alert("Please enter rows and columns count.");
-                return;
-            }
-
-            // Check if the layout name already exists
-            const nameExists = existingLayouts.some(
-                (layout) => layout.name.toLowerCase() === layoutName.trim().toLowerCase()
-            );
-
-            if (nameExists) {
-                alert("A layout with this name already exists. Please choose a different name.");
-                return;
-            }
-
-            dispatch(addLayout({ name: layoutName, rows, cols, layout: grid }));
+    // Handle column click (toggle entire column)
+    const handleColumnClick = (colIndex) => {
+        const newGrid = [...grid];
+        const currentValue = newGrid.every(row => row[colIndex] === 1) ? 0 : 1;
+        for (let i = 0; i < rows; i++) {
+            newGrid[i][colIndex] = currentValue;
         }
-
-        if (mode === "update") {
-            dispatch(updateLayout({ name: layoutName, rows, cols, layout: grid }));
+        setGrid(newGrid);
+        
+        // Notify parent component of the update if callback provided
+        if (onLayoutUpdate) {
+            onLayoutUpdate(newGrid);
         }
-
-        toast.success("Layout saved successfully!", {
-            className: 'text-l'
-        });
-        navigate("/dashboard");
     };
 
-    // Reset Grid
-    const handleReset = () => {
-        if (mode === "create") {
-            setRows(0);
-            setCols(0);
-            setLayoutName("");
-            setGrid([]);
-        } else {
-            setGrid(initialLayout.layout); // Reset to initial layout if updating
+    // Fill grid with specific value
+    const fillGrid = (value) => {
+        const newGrid = Array.from({ length: rows }, () =>
+            Array.from({ length: cols }, () => value)
+        );
+        setGrid(newGrid);
+        
+        // Notify parent component of the update if callback provided
+        if (onLayoutUpdate) {
+            onLayoutUpdate(newGrid);
         }
+    };
+
+    // Clear the grid (set all cells to 0)
+    const clearGrid = () => {
+        fillGrid(0);
     };
 
     return (
-        <div className="flex flex-col items-center p-8 space-y-8">
-            <h2 className="text-xl font-bold">
-                {mode === "create" ? "Create New Layout" : "Update Layout"}
-            </h2>
+        <div className="flex flex-col items-center space-y-4 w-full">
+            {/* Grid Legend */}
+            <div className="flex flex-wrap justify-center gap-4 mb-4 w-full">
+                {cellLegend.map((item) => (
+                    <div key={item.value} className="flex items-center">
+                        <div className={`w-6 h-6 ${item.color} border border-gray-400 mr-2`}></div>
+                        <span className="text-sm">{item.label}</span>
+                    </div>
+                ))}
+            </div>
 
-
-            {mode === "create" && (
-                <div className="flex items-center space-x-4">
-                    {/* Layout Name */}
-                    <label className="font-bold">Layout Name:</label>
-                    <input
-                        type="text"
-                        value={layoutName}
-                        onChange={(e) => setLayoutName(e.target.value)}
-                        className="border border-gray-300 p-2 rounded"
-                        disabled={mode === "update"} // Disable name edit in update mode
-                    />
-
-                    {/* Row and Column Inputs */}
-                    <label className="font-bold">Rows:</label>
-                    <input
-                        type="number"
-                        value={rows}
-                        onChange={(e) => setRows(Number(e.target.value))}
-                        className="border border-gray-300 p-2 rounded"
-                        placeholder="Rows"
-                    />
-                    <label className="font-bold">Columns:</label>
-                    <input
-                        type="number"
-                        value={cols}
-                        onChange={(e) => setCols(Number(e.target.value))}
-                        className="border border-gray-300 p-2 rounded"
-                        placeholder="Cols"
-                    />
-                </div>
-            )}
-
-            {mode === "update" && (
-                <div className="w-full px-12 flex justify-start items-start">
-                    <h3 className="font-semibold text-lg mb-2">{layoutName}</h3>
-                </div>
-            )}
+            {/* Grid Tools */}
+            <div className="flex flex-wrap gap-2 mb-4">
+                <button
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm"
+                    onClick={clearGrid}
+                >
+                    Clear Grid
+                </button>
+                <button
+                    className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded text-sm"
+                    onClick={() => fillGrid(1)}
+                >
+                    Fill with Panels
+                </button>
+            </div>
 
             {/* Grid Display */}
-            <div className="w-full max-w-7xl overflow-x-auto">
-                {/* Column Numbers */}
-                <div className="flex mb-2">
+            <div className="w-full overflow-x-auto">
+                {/* Grid Header (Column Numbers) */}
+                <div className="flex mb-1">
                     <div className="w-8 h-8 flex-shrink-0"></div>
                     {Array.from({ length: cols }).map((_, colIndex) => (
                         <div
                             key={`col-${colIndex}`}
-                            className="w-8 h-8 flex-shrink-0 flex justify-center items-center text-sm font-bold border"
+                            className="w-8 h-8 flex-shrink-0 flex justify-center items-center text-sm font-medium border border-gray-300 cursor-pointer hover:bg-gray-100"
+                            onClick={() => handleColumnClick(colIndex)}
                         >
                             {colIndex + 1}
                         </div>
@@ -162,11 +147,11 @@ const GridEditor = ({ mode = "create", initialLayout = null }) => {
                 {/* Grid Rows */}
                 <div>
                     {grid.map((row, rowIndex) => (
-                        <div key={`row-${rowIndex}`} className="flex mb-2">
+                        <div key={`row-${rowIndex}`} className="flex mb-1">
                             {/* Row Number */}
                             <div
-                                className="w-8 h-16 flex-shrink-0 flex justify-center items-center text-sm font-bold border cursor-pointer"
-                                onClick={() => handleRowClick(rowIndex)} // Toggle row
+                                className="w-8 h-8 flex-shrink-0 flex justify-center items-center text-sm font-medium border border-gray-300 cursor-pointer hover:bg-gray-100"
+                                onClick={() => handleRowClick(rowIndex)}
                             >
                                 {rowIndex + 1}
                             </div>
@@ -174,13 +159,9 @@ const GridEditor = ({ mode = "create", initialLayout = null }) => {
                             {row.map((cell, colIndex) => (
                                 <div
                                     key={`${rowIndex}-${colIndex}`}
-                                    className={`w-8 h-16 flex-shrink-0 border cursor-pointer ${cell === 0
-                                        ? "bg-gray-300"
-                                        : cell === 1
-                                            ? "bg-blue-500"
-                                            : "bg-purple-500"
-                                        }`}
+                                    className={`w-8 h-8 flex-shrink-0 border border-gray-300 cursor-pointer ${cellLegend[cell]?.color}`}
                                     onClick={() => handleCellClick(rowIndex, colIndex)}
+                                    title={`Row ${rowIndex + 1}, Column ${colIndex + 1}: ${cellLegend[cell]?.label}`}
                                 ></div>
                             ))}
                         </div>
@@ -188,20 +169,9 @@ const GridEditor = ({ mode = "create", initialLayout = null }) => {
                 </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex space-x-4">
-                <button
-                    onClick={handleSave}
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                >
-                    {mode === "create" ? "Save Layout" : "Update Layout"}
-                </button>
-                <button
-                    onClick={handleReset}
-                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                >
-                    Reset
-                </button>
+            {/* Grid Info */}
+            <div className="text-sm text-gray-500 mt-2">
+                Click on cells to toggle between empty and solar panel. Click on row/column numbers to toggle entire rows/columns.
             </div>
         </div>
     );

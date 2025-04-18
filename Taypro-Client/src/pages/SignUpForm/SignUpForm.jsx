@@ -10,7 +10,6 @@ import { toast } from "react-toastify";
 import ReactLoading from 'react-loading';
 
 export function SignupForm() {
-
     const navigate = useNavigate();
 
     const [username, setUsername] = useState('');
@@ -70,98 +69,115 @@ export function SignupForm() {
     }
 
     return (
-        <>
-            <div className="min-h-screen py-10">
-                <div className="max-w-md w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8 shadow-input bg-white dark:bg-black">
-                    <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200">
-                        Welcome to TayPro
-                    </h2>
-                    <p className="text-neutral-600 text-sm max-w-sm mt-2 dark:text-neutral-300">
-                        Sign up to empowering renewable energy
-                    </p>
+        <div className="min-h-screen grid md:grid-cols-2 bg-green-50">
+            {/* Left Side - Signup Form */}
+            <div className="flex items-center justify-center p-8">
+                <div className="w-full max-w-md space-y-6">
+                    <div className="space-y-2">
+                        <h1 className="text-4xl font-bold text-green-800">
+                            Join TayPro
+                        </h1>
+                        <h2 className="text-3xl font-bold text-green-800">
+                            Create Account
+                        </h2>
+                        <div className="space-y-2">
+                            <p className="text-gray-600">
+                                Revolutionizing Solar Panel Cleaning
+                            </p>
+                            <p className="text-sm text-gray-500">
+                                Join our innovative platform for automated and efficient solar panel maintenance
+                            </p>
+                        </div>
+                    </div>
 
-                    <form className="mt-8" onSubmit={handleSubmit}>
-                        <LabelInputContainer className="mb-4">
-                            <Label htmlFor="username">Username</Label>
+                    <form className="space-y-4" onSubmit={handleSubmit}>
+                        <div>
                             <Input
                                 id="username"
-                                placeholder="John123"
+                                placeholder="Username"
                                 type="text"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
+                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
                             />
-                        </LabelInputContainer>
-                        <LabelInputContainer className="mb-4">
-                            <Label htmlFor="email">Email Address</Label>
+                        </div>
+                        
+                        <div>
                             <Input
                                 id="email"
-                                placeholder="projectmayhem@fc.com"
+                                placeholder="Email Address"
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
                             />
-                        </LabelInputContainer>
-                        <LabelInputContainer className="mb-4">
-                            <Label htmlFor="password">Password</Label>
+                        </div>
+                        
+                        <div>
                             <Input
                                 id="password"
-                                placeholder="••••••••"
+                                placeholder="Password"
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
                             />
-                        </LabelInputContainer>
-                        <LabelInputContainer className="mb-8">
-                            <Label htmlFor="confirmpassword">Confirm password</Label>
+                        </div>
+                        
+                        <div>
                             <Input
                                 id="confirmpassword"
-                                placeholder="••••••••"
+                                placeholder="Confirm Password"
                                 type="password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
+                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
                             />
-                        </LabelInputContainer>
+                        </div>
 
                         <button
-                            className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
+                            className="w-full bg-green-800 text-white py-3 rounded-lg hover:bg-green-700 transition duration-300 flex items-center justify-center"
                             type="submit"
+                            disabled={loading}
                         >
-                            {loading ?
-                                <div className="w-full px-5 flex items-center justify-center h-4 ">
-                                    <ReactLoading type={"balls"} className="w-12 fill-white dark:fill-black" />
-                                </div>
-                                :
-                                <div>
-                                    Sign up &rarr;
-                                    <BottomGradient />
-                                </div>
-                            }
+                            {loading ? (
+                                <ReactLoading type={"spin"} height={24} width={24} color="white" />
+                            ) : (
+                                "Create Account"
+                            )}
                         </button>
 
-                        <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-8 h-[1px] w-full" />
-
-                        <div className="text-gray-600 mt-8">
-                            Already have an account?&nbsp;
-                            <div className="inline hover:underline hover:cursor-pointer hover:text-blue-500 dark:hover:text-white" onClick={() => navigate('/login')}>
-                                Log In
-                            </div>.
+                        <div className="text-center">
+                            <span className="text-gray-600">Already have an account? </span>
+                            <button 
+                                type="button"
+                                onClick={() => navigate('/login')}
+                                className="text-green-600 hover:underline font-medium"
+                            >
+                                Sign In
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
-        </>
 
-    );
-}
-
-
-// LabelInputContainer component
-const LabelInputContainer = ({ children, className }) => {
-    return (
-        <div className={cn("flex flex-col space-y-2 w-full", className)}>
-            {children}
+            {/* Right Side - Illustration */}
+            <div className="hidden md:flex items-center justify-center bg-gradient-to-br from-green-400 to-green-600 p-8">
+                <div className="relative w-full max-w-lg">
+                    <div className="absolute top-0 -left-4 w-72 h-72 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+                    <div className="absolute top-0 -right-4 w-72 h-72 bg-green-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+                    <div className="absolute -bottom-8 left-20 w-72 h-72 bg-green-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+                    <div className="relative">
+                        <img
+                            src="https://i.pinimg.com/originals/e3/f9/c4/e3f9c42f3b449e72123466d80fc5f18b.png"
+                            className="w-full h-auto max-w-md mx-auto"
+                            alt="Solar panel cleaning illustration"
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
     );
-};
+}
 
 export default SignupForm;

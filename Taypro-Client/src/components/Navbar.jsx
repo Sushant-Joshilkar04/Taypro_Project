@@ -1,20 +1,54 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../store/slices/userSlice";
+import { toast } from "react-toastify";
 
 const Navbar = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const location = useLocation();
 
     // Fetch user authentication state
     const userInfo = useSelector((state) => state.user.userInfo);
     // console.log(userInfo);
 
     // Navigation Handlers
-    const handleDashboardNavigation = () => navigate("/dashboard");
+    const handleDashboardNavigation = () => navigate("/user/dashboard");
     const handleLogin = () => navigate("/login");
     const handleSignUp = () => navigate("/signup");
+    
+    // Scroll handlers for homepage sections
+    const handleHome = () => {
+        if (location.pathname === '/') {
+            // If already on homepage, scroll to top (hero section)
+            document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            // Navigate to homepage
+            navigate("/");
+        }
+    };
+    
+    const handleAbout = () => {
+        if (location.pathname === '/') {
+            // If on homepage, scroll to About section
+            document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            // Navigate to homepage with hash for About section
+            navigate("/#about");
+        }
+    };
+    
+    const handleContact = () => {
+        if (location.pathname === '/') {
+            // If on homepage, scroll to Contact section
+            document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            // Navigate to homepage with hash for Contact section
+            navigate("/#contact");
+        }
+    };
+    
     const handleLogout = () => {
         dispatch(logout());
         toast.success('User logged out successfully', {
@@ -25,14 +59,38 @@ const Navbar = () => {
 
     return (
         <div className="p-12">
-            <nav className="backdrop-blur-md bg-white/50 fixed top-0 left-0 w-full flex justify-between items-center px-6 py-3 shadow-md">
-                {/* Logo */}
-                <img
-                    src="/TP_logo.png"
-                    alt="Taypro Logo"
-                    className="h-10 cursor-pointer"
-                    onClick={handleDashboardNavigation}
-                />
+            <nav className="backdrop-blur-md bg-white/50 fixed top-0 left-0 w-full flex justify-between items-center px-6 py-3 shadow-md z-50">
+                {/* Logo and Company Name */}
+                <div className="flex items-center space-x-2 cursor-pointer" onClick={handleHome}>
+                    <img
+                        src="https://images.unsplash.com/photo-1611365892117-baa39d74b924?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&h=50&q=80"
+                        alt="TayPro Logo"
+                        className="h-10 w-10 rounded-full object-cover"
+                    />
+                    <span className="text-xl font-bold text-green-800">TayPro</span>
+                </div>
+
+                {/* Navigation Links */}
+                <div className="hidden md:flex items-center space-x-6">
+                    <button 
+                        onClick={handleHome}
+                        className="text-gray-700 hover:text-green-800 font-medium transition-colors"
+                    >
+                        Home
+                    </button>
+                    <button 
+                        onClick={handleAbout}
+                        className="text-gray-700 hover:text-green-800 font-medium transition-colors"
+                    >
+                        About Us
+                    </button>
+                    <button 
+                        onClick={handleContact}
+                        className="text-gray-700 hover:text-green-800 font-medium transition-colors"
+                    >
+                        Contact Us
+                    </button>
+                </div>
 
                 {/* User Authentication Section */}
                 <div className="flex items-center space-x-4">

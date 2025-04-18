@@ -63,7 +63,7 @@ const verifyEmail = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
   try {
     let user = await User.findOne({ email });
     if (!user) {
@@ -79,7 +79,13 @@ const login = async (req, res) => {
       return res.status(401).json({ msg: 'Incorrect password' });
     }
 
+    // Check if the selected role matches the user's role
+    if (role && user.role !== role) {
+      return res.status(403).json({ msg: `Invalid credentials for ${role} login` });
+    }
+
     const token = createJWT(user);
+    console.log("Generated Token:", token); 
     return res.status(200).json({ token, msg: "Token sent" });
 
   } catch (err) {
@@ -117,7 +123,7 @@ const saveLayout = async (req, res) => {
   }
 }
 
-const getUserProfile = async (req, res) => {
+const getUserProfile = async (req, res) =>{
   try {
     const user = req.user;
     if (!user) {
@@ -129,6 +135,32 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+const fetchUsers = async (req,res)=>{
+  try{
+    const user = await User.find({});
+    if(!user || user.length === 0)
+      return res.status(404).json({ msg: 'No users found' });
+    
+    else
+      return res.status(200).json({msg:'Users fetched successfully'},user);
+    
+  }catch(err){
+    return res.status(500).json({ msg: 'Server Error' });
+  }
+}
+
+const deleteUser = async (req,res) => {
+  try{
+    const userId = req.params.id;
+    const user = await User.findByIdAndDelete(userId);
+    if(!user)
+      return res.status(404).json({msg:'User not found'});
+    else 
+      return res.status(200).json({msg:'User deleted successfully'});
+  }catch(err){
+    return res.status(500).json({msg:'Server Error'});
+  }
+}
 
 
-module.exports = { sendOTP, register, verifyEmail, login, passwordReset, saveLayout, getUserProfile };
+module.exports = { sendOTP, register, verifyEmail, login, passwordReset, saveLayout, getUserProfile ,deleteUser,fetchUsers};
