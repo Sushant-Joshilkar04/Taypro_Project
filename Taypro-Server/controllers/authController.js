@@ -14,6 +14,7 @@ const sendOTP = async (req, res) => {
     }
     const generated_otp = Math.floor(100000 + Math.random() * 900000);
     user.otp = generated_otp;
+    console.log(user.otp)
     await user.save();
     await sendEmail(email, 'Verify your email', `Your OTP code is ${generated_otp}`);
     return res.status(200).json({ otpFlag: true, msg: `OTP has been sent to your email : '${email}' ` });
