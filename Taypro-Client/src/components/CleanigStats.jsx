@@ -1,32 +1,36 @@
 import { useEffect, useState } from "react";
-import io from "socket.io-client";
-
-const socket = io("http://localhost:5000", { transports: ["websocket"] });
+import axios from "axios";
 
 const CleaningStats = () => {
   const [cleaningStats, setCleaningStats] = useState([]);
   const [botStatus, setBotStatus] = useState(null);
 
   useEffect(() => {
-    // Listen for cleaning stats updates
-    socket.on("updateCleaningStats", (newStats) => {
-      setCleaningStats((prevStats) => [newStats, ...prevStats]); // Add new data
-    });
-
-    // Listen for bot status updates
-    socket.on("updateBotStatus", (status) => {
-      setBotStatus(status);
-    });
-
-    return () => {
-      socket.off("updateCleaningStats");
-      socket.off("updateBotStatus");
+    // Fetch cleaning stats on component mount
+    const fetchCleaningStats = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/cleaning-stats");
+        if (response.data) {
+          setCleaningStats(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching cleaning stats:", error);
+      }
     };
+
+    // Initial fetch
+    fetchCleaningStats();
+
+    // Poll for updates every 30 seconds instead of using WebSockets
+    const intervalId = setInterval(fetchCleaningStats, 30000);
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   return (
     <div className="p-4 bg-gray-100">
-      <h2 className="text-xl font-bold mb-4">📊 Cleaning Stats (Live)</h2>
+      <h2 className="text-xl font-bold mb-4">📊 Cleaning Stats</h2>
 
       {botStatus && (
         <div className="bg-white p-3 shadow rounded mb-4">

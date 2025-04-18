@@ -49,7 +49,7 @@ const SchedulePage = () => {
     // Get robot status
     fetchRobotStatus();
 
-    // Simulate robot status updates with websocket-like behavior
+    // Periodic updates for robot status
     const intervalId = setInterval(fetchRobotStatus, 10000);
     return () => clearInterval(intervalId);
   }, []);
