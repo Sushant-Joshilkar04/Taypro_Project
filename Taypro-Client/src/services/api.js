@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create an axios instance
 const api = axios.create({
-    baseURL: 'http://localhost:5000', // Adjust this to match your server URL
+    baseURL: 'https://taypro-project.vercel.app/', // Adjust this to match your server URL
     headers: {
         'Content-Type': 'application/json',
     },

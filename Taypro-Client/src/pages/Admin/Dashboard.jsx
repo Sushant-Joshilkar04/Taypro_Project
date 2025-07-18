@@ -19,7 +19,7 @@ const Dashboard = () => {
         const fetchStats = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await axios.get('http://localhost:5000/api/admin/stats', {
+                const response = await axios.get('https://taypro-project.vercel.app/api/admin/stats', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setStats(response.data);

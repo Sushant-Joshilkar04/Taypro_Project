@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const axiosInstance = axios.create({
   // baseURL: import.meta.env.VITE_SERVER_BASE_URL,
-  baseURL: "http://localhost:5000/",
+  baseURL: "https://taypro-project.vercel.app",
   headers: {
     'Content-Type': 'application/json',
   },

@@ -8,7 +8,7 @@ const BotLocation = () => {
   useEffect(() => {
     const fetchBotLocation = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/bot/bot-location");
+        const response = await axios.get("https://taypro-project.vercel.app/api/bot/bot-location");
         setBotData(response.data);
         setError(null);
       } catch (err) {

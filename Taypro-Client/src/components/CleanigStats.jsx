@@ -9,7 +9,7 @@ const CleaningStats = () => {
     // Fetch cleaning stats on component mount
     const fetchCleaningStats = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/cleaning-stats");
+        const response = await axios.get("https://taypro-project.vercel.app/api/cleaning-stats");
         if (response.data) {
           setCleaningStats(response.data);
         }
